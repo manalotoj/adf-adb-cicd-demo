@@ -1,0 +1,21 @@
+parameters:
+- name: adbWorkspaceUrl
+  type: string
+- name: adbAccessToken
+  type: string
+
+steps:
+- task: UsePythonVersion@0
+  displayName: 'Set python version 3.x'
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+    architecture: 'x64'
+- task: configuredatabricks@0
+  inputs:
+    url: ${{parameters.adbWorkspaceUrl}}
+    token: ${{parameters.adbAccessToken}}
+- task: deploynotebooks@0
+  inputs:
+    notebooksFolderPath: './adb-root'
+    workspaceFolder: '/Shared'

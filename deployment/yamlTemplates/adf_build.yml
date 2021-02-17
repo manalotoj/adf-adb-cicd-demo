@@ -1,0 +1,25 @@
+# File: adf-build.yml
+# Description: common adf build template
+
+parameters:
+  # name of adf instance that has been configured for git integration
+- name: adfName
+  type: string
+
+  # name of artifact to publish
+- name: artifactName
+  type: string
+
+steps:
+# copy adf template files
+- task: CopyFiles@2
+  displayName: 'Copy ADF templates to staging directory'
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)/${{parameters.adfName}}'
+    Contents: '**'
+    TargetFolder: $(Build.ArtifactStagingDirectory)
+
+# publish templates as a build artifact
+- publish: $(Build.ArtifactStagingDirectory)
+  displayName: 'Publish build artifacts'
+  artifact: ${{parameters.artifactName}}

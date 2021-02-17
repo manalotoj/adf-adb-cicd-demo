@@ -1,0 +1,31 @@
+trigger:
+  paths:
+    exclude:
+    - azure-pipelines/*
+
+pool:
+  vmImage: ubuntu-18.04
+
+resources:
+  repositories:
+  # common deployment repo
+  - repository: deployment
+    type: 'git'
+    name: deployment
+
+variables:
+  - name: artifactName
+    value: 'artifactseses'
+
+stages:
+- stage: build
+  displayName: build
+  variables:
+  - group: dev_app_001
+  jobs: 
+  - job: 'build'
+    steps: 
+    - template: yamlTemplates/adb_build.yml@deployment
+      parameters:
+        artifactName: 'artifactses'
+  

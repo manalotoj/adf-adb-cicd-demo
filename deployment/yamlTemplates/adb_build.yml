@@ -1,0 +1,19 @@
+parameters:
+  # name of artifact to publish
+- name: artifactName
+  type: string
+
+steps: 
+# copy adb notebooks
+- task: CopyFiles@2
+  displayName: 'Copy databricks notebooks to staging directory'
+  inputs:
+    # adb-root is used by convention
+    sourceFolder: '$(Build.SourcesDirectory)/adb-root'
+    Contents: '**'
+    TargetFolder: $(Build.ArtifactStagingDirectory)
+
+# publish templates as a build artifact
+- publish: $(Build.ArtifactStagingDirectory)
+  displayName: 'Publish build artifacts'
+  artifact: ${{parameters.artifactName}}

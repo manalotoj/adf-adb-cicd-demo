@@ -1,0 +1,116 @@
+#File: adf_deploy.yml
+
+parameters:
+  # resource group containing target adf
+- name: rgName
+  type: string
+
+  # target adf region
+- name: region
+  type: string
+  
+  # target adf name
+- name: adfName
+  type: string
+
+  # used to create adf instance (whether or not it already exists)
+- name: createAdf
+  type: boolean
+  default: false
+
+  # used when executing arm template deployment
+- name: subscriptionId
+  type: string
+
+  # service connection of type arm
+- name: subscriptionConnection
+  type: string
+
+  # name of build artifact to use
+- name: artifactName
+  type: string
+
+  # flag indicating whether or not to grant shared IR permissions (this requires elevated privileges)
+- name: grantSharedIrPermissions
+  type: boolean
+  default: false
+
+  # name of common adf that contains shared IR
+- name: commonAdfName
+  type: string
+
+  # name of common adf resource group  
+- name: commonRgName
+  type: string  
+
+  # name of shared IR (this can be converted to an array)
+- name: sharedIrName
+  type: string  
+
+steps:
+# checkout deployment repository
+- checkout: deployment
+
+# stop all triggers using powershell script
+- task: AzureResourceManagerTemplateDeployment@3
+  displayName: 'create adf instance'
+  condition: ${{parameters.createAdf}}
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: ${{parameters.subscriptionConnection}}
+    subscriptionId: ${{parameters.subscriptionId}}
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: ${{parameters.rgName}}
+    location: ${{parameters.region}}
+    templateLocation: 'Linked artifact'
+    csmFile: 'armTemplates/adf.json'
+    csmParametersFile: 'armTemplates/adf.parameters.json'
+    deploymentMode: 'Incremental'
+    overrideParameters: -adfName "${{parameters.adfName}}" -region "${{parameters.region}}"
+
+  # **** this task requires elevated privelege - ability to create rbac role assignment, ex. 'User Access Administrator' ***
+  # grant shared IR permissions using powershell script
+- task: AzurePowerShell@5
+  displayName: 'Grant shared IR permissions'
+  condition: ${{parameters.grantSharedIrPermissions}}
+  inputs:
+    azureSubscription: ${{parameters.subscriptionConnection}}
+    ScriptPath: 'scripts/adf_shared_ir.ps1'
+    ScriptType: 'FilePath'
+    ScriptArguments: '-commonRgName ${{parameters.commonRgName}} -commonAdfName ${{parameters.commonAdfName}} -sharedIrName ${{parameters.sharedIrName}} -adfName ${{parameters.adfName}} -rgName ${{parameters.rgName}}'
+    azurePowerShellVersion: 'LatestVersion'
+
+# start all triggers using powershell script
+- task: AzurePowerShell@5
+  displayName: 'Stop all triggers'
+  inputs:
+    azureSubscription: ${{parameters.subscriptionConnection}}
+    ScriptPath: 'scripts/adf-triggers.ps1'
+    ScriptType: 'FilePath'
+    ScriptArguments: '-armTemplate "$(Pipeline.Workspace)/${{parameters.artifactName}}/ARMTemplateForFactory.json" -ResourceGroupName ${{parameters.rgName}} -DataFactoryName ${{parameters.adfName}} -predeployment $true -deleteDeployment $false'
+    azurePowerShellVersion: 'LatestVersion'
+
+# deploy ADF using arm resource group template deployment
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: ${{parameters.subscriptionConnection}}
+    subscriptionId: ${{parameters.subscriptionId}}
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: ${{parameters.rgName}}
+    location: ${{parameters.region}}
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Pipeline.Workspace)/${{parameters.artifactName}}/ARMTemplateForFactory.json'
+    csmParametersFile: '$(Pipeline.Workspace)/${{parameters.artifactName}}/ARMTemplateParametersForFactory.json'
+    deploymentMode: 'Incremental'
+    overrideParameters: -factoryName ${{parameters.adfName}}
+
+# start all triggers using powershell script
+- task: AzurePowerShell@5
+  displayName: 'Start all triggers'
+  inputs:
+    azureSubscription: ${{parameters.subscriptionConnection}}
+    ScriptPath: 'scripts/adf-triggers.ps1'
+    ScriptType: 'FilePath'
+    ScriptArguments: '-armTemplate "$(Pipeline.Workspace)/${{parameters.artifactName}}/ARMTemplateForFactory.json" -ResourceGroupName ${{parameters.rgName}} -DataFactoryName ${{parameters.adfName}} -predeployment $false -deleteDeployment $true'
+    azurePowerShellVersion: 'LatestVersion'

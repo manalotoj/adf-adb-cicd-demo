@@ -1,0 +1,87 @@
+trigger:
+  branches:
+    include:
+    - adf_publish
+  paths:
+    exclude:
+    - azure-pipelines/*
+
+pool:
+  vmImage: ubuntu-18.04
+
+resources:
+  repositories:
+  # common deployment repo
+  - repository: deployment
+    type: 'git'
+    name: deployment
+    
+variables:
+  - name: artifactName
+    value: 'artifactseses'
+  - name: region
+    value: 'west us 2'
+
+stages:
+- stage: BUILD
+  displayName: BUILD
+  variables:
+  - group: dev_app_001
+  jobs: 
+  - job: 'build_job'
+    steps: 
+    - script: echo $(subscriptionConnection)
+    - template: yamlTemplates/adf_build.yml@deployment
+      parameters:
+        adfName: $(adfName)
+        artifactName: $(artifactName)
+- stage: dev
+  displayName: 'dev stage'
+  variables:
+  - group: dev_app_001  
+  jobs:
+    - deployment: dev
+      displayName: 'dev deployment'
+      environment: dev_app_001
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - template: yamlTemplates/adf_deploy.yml@deployment
+                parameters:
+                  subscriptionId: $(subscriptionId)
+                  # service connection not supported at the stage level and must be hard-coded
+                  subscriptionConnection: 'vs-enterprise'
+                  adfName: $(adfName)
+                  rgName: $(rgName)
+                  region: $(region)
+                  artifactName: $(artifactName)
+                  commonAdfName: $(commonAdfName)
+                  commonRgName: $(commonRgName)
+                  sharedIrName: $(sharedIrName)
+- stage: uat
+  displayName: 'uat stage'
+  variables:
+  - group: uat_app_001  
+  jobs:
+    - deployment: uat
+      displayName: 'uat deployment'
+      environment: uat_app_001
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - template: yamlTemplates/adf_deploy.yml@deployment
+                parameters:
+                  subscriptionId: $(subscriptionId)
+                  # service connection not supported at the stage level and must be hard-coded
+                  subscriptionConnection: 'vs-enterprise'
+                  adfName: $(adfName)
+                  rgName: $(rgName)
+                  createAdf: true
+                  region: $(region)
+                  artifactName: $(artifactName)
+                  grantSharedIrPermissions: true
+                  commonAdfName: $(commonAdfName)
+                  commonRgName: $(commonRgName)
+                  sharedIrName: $(sharedIrName)                  

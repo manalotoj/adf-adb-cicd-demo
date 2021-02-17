@@ -1,0 +1,22 @@
+{
+    "contentVersion": "1.0.0.0",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "parameters": {
+        "adfName": {
+            "type": "string"
+        },
+        "region": {
+            "type": "string"
+        }
+    },
+    "resources": [{
+        "name": "[parameters('adfName')]",
+        "apiVersion": "2018-06-01",
+        "type": "Microsoft.DataFactory/factories",
+        "location": "[parameters('region')]",
+        "identity": {
+            "type": "SystemAssigned"
+        },
+        "properties":{}
+    }]
+}
