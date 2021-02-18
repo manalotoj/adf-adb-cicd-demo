@@ -19,8 +19,6 @@ resources:
 variables:
   - name: artifactName
     value: 'artifactseses'
-  - name: region
-    value: 'west us 2'
 
 stages:
 - stage: BUILD
@@ -78,10 +76,10 @@ stages:
                   subscriptionConnection: 'vs-enterprise'
                   adfName: $(adfName)
                   rgName: $(rgName)
-                  createAdf: true
+                  createAdf: false
                   region: $(region)
                   artifactName: $(artifactName)
-                  grantSharedIrPermissions: true
+                  grantSharedIrPermissions: false
                   commonAdfName: $(commonAdfName)
                   commonRgName: $(commonRgName)
                   sharedIrName: $(sharedIrName)                  
