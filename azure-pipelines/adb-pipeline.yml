@@ -27,5 +27,5 @@ stages:
     steps: 
     - template: yamlTemplates/adb_build.yml@deployment
       parameters:
-        artifactName: 'artifactses'
+        artifactName: $(artifactName)
   
