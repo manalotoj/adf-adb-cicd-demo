@@ -29,4 +29,15 @@ stages:
     - template: yamlTemplates/adb_build.yml@deployment
       parameters:
         artifactName: $(artifactName)
+- stage: dev
+  displayName: 'dev stage'
+  variables:
+  - group: dev_app_001
+  jobs:
+  - job: 'dev'
+    steps: 
+    - template: yamlTemplates/adb_deploy.yml@deployment
+      parameters:
+        adbWorkspaceUrl: $(adbWorkspaceUrl)
+        adbAccessToken: $(adbAccessToken)
   
