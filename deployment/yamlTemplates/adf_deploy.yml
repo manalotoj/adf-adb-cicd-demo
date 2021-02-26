@@ -38,14 +38,17 @@ parameters:
   # name of common adf that contains shared IR
 - name: commonAdfName
   type: string
+  default: ''
 
   # name of common adf resource group  
 - name: commonRgName
-  type: string  
+  type: string
+  default: ''
 
   # name of shared IR (this can be converted to an array)
 - name: sharedIrName
-  type: string  
+  type: string
+  default: ''
 
 steps:
 # checkout deployment repository

@@ -82,7 +82,7 @@ Test the pipeline and verify execution. Once successful:
 - run the pipeline and verify execution
 
 ### Step 6: Define deployment approvals and checks
-Upon successful execution, environment definitions will automatically be created within *Environments*. For each environment, define approvals and checks as needed (ex. approvals required prior to deploying to UAT and PROD).
+Upon successful execution, environment definitions will automatically be created within *Pipelines>Environments*. For each environment, define approvals and checks as needed (ex. approvals required prior to deploying to UAT and PROD).
 
 ### Step 7: Configure ADB Pipeline
 In your app repo's master branch:
