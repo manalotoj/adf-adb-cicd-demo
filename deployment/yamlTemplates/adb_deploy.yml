@@ -3,10 +3,11 @@ parameters:
   type: string
 - name: adbAccessToken
   type: string
+- name: sourcePath
+  type: string
 
 steps:
 - task: UsePythonVersion@0
-  displayName: 'Set python version 3.x'
   inputs:
     versionSpec: '3.x'
     addToPath: true
@@ -17,5 +18,5 @@ steps:
     token: ${{parameters.adbAccessToken}}
 - task: deploynotebooks@0
   inputs:
-    notebooksFolderPath: './adb-root'
+    notebooksFolderPath: ${{parameters.sourcePath}}
     workspaceFolder: '/Shared'

@@ -94,5 +94,7 @@ Navigate to your variable group definitions within *Pipelines>Library* and add t
 - adbWorkspaceUrl
 - adbAccessToken - use key vault integration for this variable
 
+As authored, all notebooks within the published artifacts will be deployed to the target databricks folder; any existing folders/notebooks will be overwritten.
+
 Test the pipeline and verify execution.
 
