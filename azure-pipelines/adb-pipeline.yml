@@ -23,6 +23,17 @@ stages:
   displayName: build
   variables:
   - group: dev_app_001
+  jobs: 
+  - job: 'build'
+    steps: 
+    - template: yamlTemplates/adb_build.yml@deployment
+      parameters:
+        artifactName: $(artifactName)
+        
+- stage: dev
+  displayName: 'dev stage'
+  variables:
+  - group: 'dev_app_001 - Copy'
   jobs:
     - deployment: dev_dep
       displayName: 'dev_deploy'
@@ -31,11 +42,12 @@ stages:
         runOnce:
           deploy:
             steps:
-              # - script: |
-              #     echo $(Pipeline.Workspace)
-              #     ls  $(Pipeline.Workspace)
+              - script: |
+                  echo $(Pipeline.Workspace)
+                  ls  $(Pipeline.Workspace)
               - template: yamlTemplates/adb_deploy.yml@deployment
                 parameters:
                   adbWorkspaceUrl: $(adbWorkspaceUrl)
                   adbAccessToken: $(adbAccessToken)
                   sourcePath: $(Pipeline.Workspace)/$(artifactName)
+                  targetPath: '/shared/newplace'
